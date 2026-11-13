@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ChaCha20 Encryption &amp; Decryption Simulator</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header>
+  <h1>ChaCha20 Simulator</h1>
+  <p>Information Security Project &middot; Symmetric stream cipher &middot; 256-bit key &middot; 20 rounds</p>
+</header>
+
+<main>
+  <!-- Key / nonce / counter -->
+  <section class="card">
+    <h2>1. Key, Nonce &amp; Counter</h2>
+    <label for="key">Secret key (256-bit = 64 hex characters)</label>
+    <input id="key" type="text" spellcheck="false" placeholder="64 hex characters">
+    <label for="nonce">Nonce (96-bit = 24 hex characters)</label>
+    <input id="nonce" type="text" spellcheck="false" placeholder="24 hex characters">
+    <label for="counter">Starting block counter</label>
+    <input id="counter" type="number" min="0" value="1">
+    <div class="row">
+      <button id="btn-generate">Generate random key &amp; nonce</button>
+    </div>
+    <p class="hint">Never reuse the same nonce with the same key &mdash; it breaks the security of ChaCha20.</p>
+  </section>
+
+  <!-- Encrypt -->
+  <section class="card">
+    <h2>2. Encrypt</h2>
+    <label for="plaintext">Plaintext message</label>
+    <textarea id="plaintext" rows="3" placeholder="Hello, Information Security!"></textarea>
+    <div class="row">
+      <button id="btn-encrypt" class="primary">Encrypt</button>
+      <button id="btn-verify">Verify with library</button>
+    </div>
+    <div id="enc-result" class="result hidden">
+      <label>Ciphertext (hex)</label>
+      <textarea id="cipher-hex" rows="3" readonly></textarea>
+      <p class="meta" id="enc-meta"></p>
+      <div class="row">
+        <button id="btn-copy">Copy ciphertext</button>
+        <button id="btn-download">Download result</button>
+        <button id="btn-use">Send to decrypt &darr;</button>
+      </div>
+    </div>
+    <div id="verify-result" class="hidden"></div>
+  </section>
+
+  <!-- Decrypt -->
+  <section class="card">
+    <h2>3. Decrypt</h2>
+    <label for="ciphertext">Ciphertext (hex)</label>
+    <textarea id="ciphertext" rows="3" placeholder="Paste ciphertext in hex"></textarea>
+    <div class="row"><button id="btn-decrypt" class="primary">Decrypt</button></div>
+    <div id="dec-result" class="result hidden">
+      <label>Recovered plaintext</label>
+      <textarea id="decrypted" rows="3" readonly></textarea>
+      <p class="meta" id="dec-meta"></p>
+    </div>
+  </section>
+
+  <div id="error" class="error hidden"></div>
+
+  <!-- Visualisation -->
+  <section class="card hidden" id="steps-card">
+    <h2>4. How it worked (first 64-byte block)</h2>
+
+    <h3>Algorithm in short</h3>
+    <ol class="short">
+      <li>Build a 4&times;4 state: 4 constants, 8 key words, 1 counter, 3 nonce words.</li>
+      <li>Run 20 rounds of Quarter Rounds (add, XOR, rotate) on the state.</li>
+      <li>Add the original state back &rarr; this is the 64-byte <b>keystream</b>.</li>
+      <li>XOR the keystream with the plaintext &rarr; ciphertext.</li>
+    </ol>
+
+    <h3>State matrix</h3>
+    <div class="slider-row">
+      <input id="round-slider" type="range" min="0" max="21" value="0">
+      <span id="round-label"></span>
+    </div>
+    <div id="matrix" class="matrix"></div>
+    <p class="hint">Colours: yellow = constants, green = key, blue = counter, pink = nonce.</p>
+
+    <h3>Keystream (first block)</h3>
+    <code id="keystream" class="block"></code>
+
+    <h3>XOR step (first 16 bytes)</h3>
+    <div class="table-wrap">
+      <table id="xor-table">
+        <thead><tr><th>Char</th><th>Plain (hex)</th><th>Keystream (hex)</th><th>Cipher (hex)</th><th>Plain bits</th><th>Key bits</th><th>Cipher bits</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<footer>ChaCha20 &middot; RFC 8439 &middot; educational project &mdash; for real systems use ChaCha20-Poly1305 and a vetted library.</footer>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
